@@ -4,9 +4,8 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from sqlalchemy import orm
 import sqlalchemy
 from VKinder.model.base import Base
-from VKinder.pwd import POSTGRES_SECRET, GROUP_TOKEN
+from VKinder.pwd import POSTGRES_SECRET, GROUP_TOKEN, NAME_DB
 
-NAME_DB = 'vk_api_db'
 DSN = f'postgresql://{POSTGRES_SECRET.get("user")}:{POSTGRES_SECRET.get("pass")}@localhost:5432/{NAME_DB}'
 
 vk = VkApi(token=GROUP_TOKEN)
