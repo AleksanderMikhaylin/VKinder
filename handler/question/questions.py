@@ -1,3 +1,5 @@
+from vk_api import VkApi
+
 from VKinder.handler.question.base_question import BaseQuestion, QuestionState
 
 from VKinder.model.tables import User
@@ -10,6 +12,9 @@ class TokenQuestion(BaseQuestion):
     def __init__(self, user_id, vk_group_client, db_session):
         self.db_session = db_session
         super().__init__(user_id, vk_group_client)
+
+    def keywords(self):
+        return ['Запрос токена', 'Token request']
 
     def question(self):
         return 'Напишите ваш токен. Токен можно получить по этой ссылке: ' + AUTH_LINK
@@ -37,9 +42,47 @@ class TokenQuestion(BaseQuestion):
         if is_valid:
             self.state = QuestionState.FULFILLED
             user = self.get_user()
-            user.token = token
 
-        return is_valid
+            params = {'has_photo': 1, 'count': 3, 'fields': 'screen_name'}
+            try:
+                vk_user_client = VkApi(token=token)
+                response = vk_user_client.method('users.search', {**params})
+                user.token = token
+                self.db_session.commit()
+                return True
+            except:
+                return False
+
+        return False
+
+    def handle(self, message):
+        if message.lower() in [keyword.lower() for keyword in self.keywords()]:
+            self.state = QuestionState.ASKED
+            self.write_msg(self.question())
+            return {
+                'status': True,
+                'message': '',
+            }
+
+        if self.state == QuestionState.ASKED:
+            if self.handle_answer(message, ''):
+                return {
+                    'status': False,
+                    'message': 'Продолжить поиск',
+                }
+            self.write_msg('Введен не верный токен, повторите попытку!')
+            return {
+                'status': False,
+                'message': 'Запрос токена',
+            }
+
+        return {
+            'status': False,
+            'message': message,
+        }
+
+    def is_active(self):
+        return self.state != QuestionState.FULFILLED
 
     def get_user(self):
         return self.db_session.query(User).filter(User.id == self.user_id).first()
@@ -47,7 +90,7 @@ class TokenQuestion(BaseQuestion):
 
 class AgeFromQuestion(BaseQuestion):
     def question(self):
-        return 'Укажите минимальный возраст: '
+        return 'Здравствуйте! \n Укажите минимальный возраст: '
 
     def is_valid_answer(self, answer, params):
         try:
