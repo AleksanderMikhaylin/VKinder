@@ -3,39 +3,49 @@ from sqlalchemy.orm import relationship
 from VKinder.model.base import Base
 
 
-class Photo(Base):
-    __tablename__ = 'photo'
+class User(Base):
+    __tablename__ = 'users'
 
-    # "<type><owner_id>_<media_id>"
-    id = sq.Column(sq.String, primary_key=True)
-    photo_id = sq.Column(sq.Integer)
-    candidate_id = sq.Column(sq.Integer, sq.ForeignKey('candidate.id'))
-    likes_count = sq.Column(sq.Integer)
-    comments_count = sq.Column(sq.Integer)
+    id = sq.Column(sq.Integer, primary_key=True, index=True)
+    token = sq.Column(sq.String)
+    # candidate_id = sq.Column(sq.Integer, sq.ForeignKey('candidates.id'))
+    # candidates = relationship('Candidate', back_populates='users')
 
 
 class Candidate(Base):
-    __tablename__ = 'candidate'
+    __tablename__ = 'candidates'
 
-    id = sq.Column(sq.Integer, primary_key=True)
+    id = sq.Column(sq.Integer, primary_key=True, index=True)
     first_name = sq.Column(sq.String)
     last_name = sq.Column(sq.String)
     screen_name = sq.Column(sq.String)
-    photos = relationship('Photo', backref='candidate')
-    users = relationship('User', secondary='user_to_candidate')
+    # photo_id = sq.Column(sq.String, sq.ForeignKey('photos.id'))
+    # photos = relationship('Photo', back_populates='candidates')
+    # users = relationship('User', secondary=candidates_for_users, backref='candidates')
 
 
-class User(Base):
-    __tablename__ = 'user'
+class Photo(Base):
+    __tablename__ = 'photos'
 
     id = sq.Column(sq.Integer, primary_key=True)
-    token = sq.Column(sq.String)
-    # user_to_candidate = sq.Column(sq.Integer)
-    candidates = relationship('Candidate', secondary='user_to_candidate')
+    photo_id = sq.Column(sq.String)
+    candidate_id = sq.Column(sq.Integer)
+    likes_count = sq.Column(sq.Integer)
+    comments_count = sq.Column(sq.Integer)
+    # candidates = relationship('Candidate', back_populates='photos')
 
 
-user_to_candidate = sq.Table(
-    'user_to_candidate', Base.metadata,
-    sq.Column('user_id', sq.Integer, sq.ForeignKey('user.id')),
-    sq.Column('candidate_id', sq.Integer, sq.ForeignKey('candidate.id')),
-)
+class ReviewedCandidates(Base):
+    __tablename__ = 'reviewed_candidates'
+
+    id = sq.Column(sq.Integer, primary_key=True)
+    user_id = sq.Column(sq.Integer)
+    candidate_id = sq.Column(sq.Integer)
+
+
+class CandidatesForUser(Base):
+    __tablename__ = 'candidates_for_users'
+
+    id = sq.Column(sq.Integer, primary_key=True)
+    user_id = sq.Column(sq.Integer)
+    candidate_id = sq.Column(sq.Integer)
