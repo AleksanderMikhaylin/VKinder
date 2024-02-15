@@ -4,11 +4,12 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from sqlalchemy import orm
 import sqlalchemy
 from VKinder.model.base import Base
-from VKinder.pwd import POSTGRES_SECRET, GROUP_TOKEN, NAME_DB
+from VKinder.settings import POSTGRES_SECRET, GROUP_TOKEN
 
-DSN = f'postgresql://{POSTGRES_SECRET.get("user")}:{POSTGRES_SECRET.get("pass")}@localhost:5432/{NAME_DB}'
+DSN = f'postgresql://{POSTGRES_SECRET.get("user")}:{POSTGRES_SECRET.get("pass")}@localhost:5432/{POSTGRES_SECRET.get("name_db")}'
 
 vk = VkApi(token=GROUP_TOKEN)
+
 long_poll = VkLongPoll(vk)
 
 db_engine = sqlalchemy.create_engine(DSN, echo=True)
@@ -27,4 +28,3 @@ with DBSession() as db_session:
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             bot = get_bot(event.user_id)
             bot.handle_new_message(event.text)
-
