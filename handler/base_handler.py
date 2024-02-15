@@ -1,6 +1,5 @@
 from VKinder.handler.helper.message_sender import MessageSender
 
-
 class BaseHandler(MessageSender):
 
     def keywords(self):
@@ -17,10 +16,15 @@ class BaseHandler(MessageSender):
 
     def handle(self, message):
         if not self.should_handle(message) and not self.is_active():
-            return False
-        self.handle_impl(message)
-        return True
+            return {
+                'status': False,
+                'message': message,
+            }
+        return self.handle_impl(message)
 
     def handle_impl(self, message):
-        pass
+        return {
+            'status': True,
+            'message': '',
+        }
 
